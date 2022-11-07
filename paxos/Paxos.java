@@ -120,7 +120,7 @@ public class Paxos implements PaxosRMI, Runnable{
      */
     public void Start(int seq, Object value){
         this.mutex.lock();
-        System.out.println("Starting"+seq);
+        //System.out.println("Starting"+seq);
         this.seq = seq;
         this.value = value;
         Thread thread1 = new Thread(this);
@@ -135,17 +135,11 @@ public class Paxos implements PaxosRMI, Runnable{
 
     @Override
     public void run(){
-        System.out.println("running");
-        //this.mutex.unlock();
         int curMin = this.Min();
-        //this.mutex.lock();
         Object vv = this.value;
-        //this.mutex.lock();
         int curSeq = this.seq;
         this.maxSeq = Math.max(this.maxSeq,curSeq);
-        System.out.println("running"+curSeq+" curMin"+curMin);
         if(curSeq < curMin) {
-            //this.mutex.unlock();
             return;
         }
         long sleepTime = 10;
@@ -159,29 +153,17 @@ public class Paxos implements PaxosRMI, Runnable{
                 sleepTime *= 2;
             }
             if(this.isDead()) {
-                //this.mutex.unlock();
                 return;
             }
-            System.out.println("running"+curSeq);
             this.mutex.lock();
             int maxSeen = this.np.getOrDefault(curSeq,-1);
             this.mutex.unlock();
             int proposeN = (maxSeen+this.peers.length)/this.peers.length * this.peers.length + this.me;
-//            int proposeN = curSeq;
-//            while(proposeN < this.Max()) proposeN += this.peers.length;
-            System.out.println("running"+curSeq+"proposed"+proposeN+"maxSeen"+maxSeen);
-//            Object vv = this.value;
+            //System.out.println("running"+curSeq+"proposed"+proposeN+"maxSeen"+maxSeen);
             int prepare_ok = 0;
             int highestNa = -1;
             for(int id = 0; id < ports.length; id++) {
-                //this.mutex.unlock();
                Response prepare = this.Call("Prepare", new Request(curSeq,proposeN), id);
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                this.mutex.lock();
                if(prepare!=null && prepare.ack) {
                    prepare_ok++;
                    if(prepare.na != -1 && prepare.na > highestNa){
@@ -196,35 +178,23 @@ public class Paxos implements PaxosRMI, Runnable{
                   }
                }
             }
-            System.out.println(curSeq+"Prepare_ok"+ prepare_ok);
+            //System.out.println(curSeq+"Prepare_ok"+ prepare_ok);
             if(prepare_ok > this.peers.length/2) {
                 int accept_ok = 0;
                 for(int id = 0; id < ports.length; id++) {
-                    //this.mutex.unlock();
                     Response accept = this.Call("Accept", new Request(curSeq,proposeN,vv), id);
-                    //this.mutex.lock();
                     if(accept!=null && accept.ack) {
                         accept_ok++;
                     }
-//                    else{
-//                        mutex.lock();
-//                        this.maxSeq = Math.max(this.maxSeq,accept.n);
-//                        mutex.unlock();
-//                    }
                 }
-                System.out.println(curSeq+"Accept_ok"+ accept_ok);
+                //System.out.println(curSeq+"Accept_ok"+ accept_ok);
                 if(accept_ok > this.peers.length/2) {
                     for(int id = 0; id < ports.length; id++) {
-                        //System.out.println("Decide"+curSeq+"send to"+id);
-                        //this.mutex.unlock();
                         this.Call("Decide",new Request(curSeq,vv,this.me,this.z[this.me]),id);
-                        //this.mutex.lock();
                     }
-                    //this.r.put(curSeq,new retStatus(State.Decided,vv));
                 }
             }
         }
-        //this.mutex.unlock();
     }
 
     // RMI handler
@@ -261,11 +231,10 @@ public class Paxos implements PaxosRMI, Runnable{
     }
 
     public Response Decide(Request req){
-        System.out.println(this.me+"Receive Decide from"+req.seq);
+        //System.out.println(this.me+"Receive Decide from"+req.seq);
         mutex.lock();
         if(!req.isDone) {
-            ////System.out.println("Receive Decide in");
-        this.r.put(req.seq, new retStatus(State.Decided, req.value));
+            this.r.put(req.seq, new retStatus(State.Decided, req.value));
         }
         else {
             this.z[req.seq] = Math.max(this.z[req.seq],req.doneMax);
@@ -281,18 +250,6 @@ public class Paxos implements PaxosRMI, Runnable{
      * see the comments for Min() for more explanation.
      */
     public void Done(int seq) {
-//        if(seq>this.z_i) {
-//            this.z_i = seq;
-//            for(int i = 0;i <= seq;i++) {
-////            if(this.r.containsKey(i)) {
-////                this.r.get(i).state = State.Forgotten;
-////                this.r.get(i).v = seq;
-////            }
-//                if(this.r.containsKey(i)) {
-//                    this.r.put(i, new retStatus(State.Forgotten, seq));
-//                }
-//            }
-//        }
         this.mutex.lock();
         if(seq>this.z[this.me]) {
             this.z[this.me] = seq;
@@ -405,7 +362,7 @@ public class Paxos implements PaxosRMI, Runnable{
             try {
                 UnicastRemoteObject.unexportObject(this.registry, true);
             } catch(Exception e){
-                ////System.out.println("None reference");
+                System.out.println("None reference");
             }
         }
     }

@@ -31,11 +31,6 @@ public class Request implements Serializable {
         this.n = n;
     }
 
-    public Request(int seq, Object value) {
-        this.seq = seq;
-        this.value = value;
-    }
-
     public Request(int seq, int n, Object value) {
         this.seq = seq;
         this.n = n;

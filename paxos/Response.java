@@ -23,19 +23,6 @@ public class Response implements Serializable {
         this.na = -1;
     }
 
-    public Response(boolean ack, int n, int na) {
-        this.ack = ack;
-        this.n = n;
-        this.na = na;
-    }
-
-    public Response(boolean ack, int n, Object value) {
-        this.ack = ack;
-        this.n = n;
-        this.na = -1;
-        this.value = value;
-    }
-
     public Response(boolean ack, int n, int na, Object value) {
         this.ack = ack;
         this.n = n;
