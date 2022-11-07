@@ -35,7 +35,6 @@ public class KVPaxosTest {
         System.out.println("Test: Basic put/get ...");
         ck.Put("app", 6);
         check(ck, "app", 6);
-        System.out.println("finish check1");
         ck.Put("a", 70);
         check(ck, "a", 70);
 

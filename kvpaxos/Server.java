@@ -100,7 +100,6 @@ public class Server implements KVPaxosRMI {
 
         mutex.lock();
         for (int i = this.firstUnchosenIndex; i < this.nextAvail; i += 1){
-            System.out.println(Integer.toString(this.firstUnchosenIndex));
             Op log = (Op) this.px.Status(this.firstUnchosenIndex).v;
             if (log.op.equals("Put")){
                 this.mapping.put(log.key, log.value);
@@ -108,10 +107,7 @@ public class Server implements KVPaxosRMI {
             this.firstUnchosenIndex += 1;
         }
         mutex.unlock();
-        System.out.println(req.key);
         Integer value = this.mapping.get(req.key);
-        System.out.println("in Get function " + Integer.toString(this.nextAvail));
-        System.out.println("paxos forget for " + Integer.toString((this.nextAvail-1)));
         this.px.Done(this.nextAvail-1);
         return new Response(true, value);
     }
@@ -162,7 +158,6 @@ public class Server implements KVPaxosRMI {
             }
         }
 
-        System.out.println(Integer.toString(me) + " paxos forget for " + Integer.toString((this.nextAvail-1)));
         this.px.Done(this.nextAvail-1);
         return new Response(finished, 1);
     }
